@@ -14,6 +14,7 @@ class Player {
     public:
         Player(float posX, float posY, Color color);
         void Draw(void);
+        void Move(void);
 };
 
 #endif
