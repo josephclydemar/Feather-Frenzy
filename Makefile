@@ -9,7 +9,6 @@ MAIN_RUN =
 CONFIG_COMMAND =
 
 # Output File Extensions
-OBJ_TARGET_EXT = o
 SHARED_TARGET_EXT =
 MAIN_TARGET_EXT =
 
@@ -24,8 +23,8 @@ COMMON_H = include/common.hpp
 PLAYER_H = include/player.hpp
 
 # Linked libraries
-MAIN_DEPS   = -lraylib
-GAME_DEPS   = -lraylib
+MAIN_DEPS   = -lplayer -lraylib
+GAME_DEPS   = -lplayer -lraylib
 COMMON_DEPS = -lraylib
 PLAYER_DEPS = -lraylib
 
@@ -51,9 +50,9 @@ LFLAGS += -L lib/$(TARGET_PLATFORM)/.
 
 
 MAIN_TARGET   = build/feather-frenzy.$(MAIN_TARGET_EXT)
-GAME_TARGET  = build/game.$(OBJ_TARGET_EXT)
-COMMON_TARGET = build/common.$(OBJ_TARGET_EXT)
-PLAYER_TARGET = build/player.$(OBJ_TARGET_EXT)
+GAME_TARGET  = build/libgame.$(SHARED_TARGET_EXT)
+COMMON_TARGET = build/libcommon.$(SHARED_TARGET_EXT)
+PLAYER_TARGET = build/libplayer.$(SHARED_TARGET_EXT)
 
 
 ifeq ($(OS), Windows_NT)
@@ -67,10 +66,21 @@ endif
 all: $(MAIN_TARGET)
 
 
-$(MAIN_TARGET): $(MAIN_SRC)
+$(MAIN_TARGET): $(MAIN_SRC) $(PLAYER_TARGET)
 	$(CXX) $(CFLAGS) $(MAIN_SRC) $(LFLAGS) $(MAIN_DEPS) -o $@
 	@cp lib/$(TARGET_PLATFORM)/*.$(SHARED_TARGET_EXT)  build/.
 	@$(CONFIG_COMMAND)
+
+# $(GAME_TARGET): $(GAME_H) $(GAME_SRC)
+# 	$(CXX) $(CFLAGS) $(GAME_SRC) $(LFLAGS) $(GAME_DEPS) -o $@
+
+
+# $(COMMON_TARGET): $(COMMON_H) $(COMMON_SRC)
+# 	$(CXX) $(CFLAGS) $(COMMON_SRC) $(LFLAGS) $(COMMON_DEPS) -o $@
+
+
+$(PLAYER_TARGET): $(PLAYER_H) $(PLAYER_SRC)
+	$(CXX) $(CFLAGS) -shared $(PLAYER_SRC) $(LFLAGS) $(PLAYER_DEPS) -o $@
 
 
 run: $(MAIN_TARGET)
@@ -79,6 +89,6 @@ run: $(MAIN_TARGET)
 
 
 clean:
-	-rm build/*.$(OBJ_TARGET_EXT) build/*.$(SHARED_TARGET_EXT) build/*.$(MAIN_TARGET_EXT)
+	-rm build/*.$(SHARED_TARGET_EXT) build/*.$(MAIN_TARGET_EXT)
 	clear || cls
 
