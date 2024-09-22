@@ -1,71 +1,84 @@
-CC = gcc
-CFLAGS = -Wall -Werror -std=c99 -O3
-LFLAGS = -I include/. -I include/raylib/. -L lib/.
+CXX = g++
+CFLAGS = -Wall -Werror -std=c++20
+LFLAGS = -I include/. -I include/raylib/. -fPIC -L build/.
+BUILD_MODE =
 TARGET_PLATFORM =
-EXEC_COMMAND =
-RENAME_COMMAND = 
 
-# Source files
-MAIN_SRC = src/main.c
-QUEUE_SRC = src/queue.c
-STACK_SRC = src/stack.c
-LLIST_SRC = src/llist.c
+MAIN_RUN =
 
-QUEUE_H = include/queue.h
-STACK_H = include/stack.h
-LLIST_H = include/llist.h
+CONFIG_COMMAND =
+
+# Output File Extensions
+OBJ_TARGET_EXT = o
+SHARED_TARGET_EXT =
+MAIN_TARGET_EXT =
+
+# Source Files
+MAIN_SRC   = src/main.cpp
+GAME_SRC  = src/game.cpp
+COMMON_SRC = src/common.cpp
+PLAYER_SRC = src/player.cpp
+
+GAME_H  = include/game.hpp
+COMMON_H = include/common.hpp
+PLAYER_H = include/player.hpp
 
 # Linked libraries
-MAIN_DEPS = -lllist -lqueue -lstack -lraylib
-
-# Output files
-SHARED_TARGET_EXT = 
-MAIN_TARGET_EXT = 
-
-MAIN_TARGET = build/main
-QUEUE_TARGET = lib/libqueue
-STACK_TARGET = lib/libstack
-LLIST_TARGET = lib/libllist
+MAIN_DEPS   = -lraylib
+GAME_DEPS   = -lraylib
+COMMON_DEPS = -lraylib
+PLAYER_DEPS = -lraylib
 
 
 ifeq ($(OS),Windows_NT)
 	TARGET_PLATFORM = windows
-	SHARED_TARGET_EXT = dll
 	MAIN_TARGET_EXT = exe
-	EXEC_COMMAND = $(MAIN_TARGET).$(MAIN_TARGET_EXT)
+	SHARED_TARGET_EXT = dll
 else
 	TARGET_PLATFORM = linux
-	SHARED_TARGET_EXT = so
 	MAIN_TARGET_EXT = out
-	RENAME_COMMAND = mv build/libraylib.so build/libraylib.so.500
-	EXEC_COMMAND = LD_LIBRARY_PATH=build/. $(MAIN_TARGET).$(MAIN_TARGET_EXT)
+	SHARED_TARGET_EXT = so
+	CONFIG_COMMAND = mv build/libraylib.so build/libraylib.so.500
+endif
+
+ifeq ($(BUILD_MODE),DEBUG)
+	CFLAGS += -g
+else
+	CFLAGS += -O3 -s
 endif
 
 LFLAGS += -L lib/$(TARGET_PLATFORM)/.
 
 
-all: $(MAIN_SRC) libqueue.$(SHARED_TARGET_EXT) libstack.$(SHARED_TARGET_EXT) libllist.$(SHARED_TARGET_EXT)
-	-@mkdir build
-	$(CC) $(CFLAGS) $(MAIN_SRC) $(LFLAGS) $(MAIN_DEPS) -o $(MAIN_TARGET).$(MAIN_TARGET_EXT)
-	@cp lib/*.$(SHARED_TARGET_EXT) lib/$(TARGET_PLATFORM)/*.$(SHARED_TARGET_EXT)  build/.
-	@$(RENAME_COMMAND)
-	@strip $(MAIN_TARGET).$(MAIN_TARGET_EXT)
+MAIN_TARGET   = build/feather-frenzy.$(MAIN_TARGET_EXT)
+GAME_TARGET  = build/game.$(OBJ_TARGET_EXT)
+COMMON_TARGET = build/common.$(OBJ_TARGET_EXT)
+PLAYER_TARGET = build/player.$(OBJ_TARGET_EXT)
 
-libqueue.$(SHARED_TARGET_EXT): $(QUEUE_H) $(QUEUE_SRC)
-	$(CC) $(CFLAGS) -shared $(QUEUE_SRC) $(LFLAGS) -o $(QUEUE_TARGET).$(SHARED_TARGET_EXT)
 
-libstack.$(SHARED_TARGET_EXT): $(STACK_H) $(STACK_SRC)
-	$(CC) $(CFLAGS) -shared $(STACK_SRC) $(LFLAGS) -o $(STACK_TARGET).$(SHARED_TARGET_EXT)
+ifeq ($(OS), Windows_NT)
+	MAIN_RUN = $(MAIN_TARGET)
+else
+	MAIN_RUN = LD_LIBRARY_PATH=build/. $(MAIN_TARGET)
+endif
 
-libllist.$(SHARED_TARGET_EXT): $(LLIST_H) $(LLIST_SRC)
-	$(CC) $(CFLAGS) -shared $(LLIST_SRC) $(LFLAGS) -o $(LLIST_TARGET).$(SHARED_TARGET_EXT)
 
-open: $(MAIN_TARGET).$(MAIN_TARGET_EXT)
-	$(EXEC_COMMAND)
+
+all: $(MAIN_TARGET)
+
+
+$(MAIN_TARGET): $(MAIN_SRC)
+	$(CXX) $(CFLAGS) $(MAIN_SRC) $(LFLAGS) $(MAIN_DEPS) -o $@
+	@cp lib/$(TARGET_PLATFORM)/*.$(SHARED_TARGET_EXT)  build/.
+	@$(CONFIG_COMMAND)
+
+
+run: $(MAIN_TARGET)
+	$(MAIN_RUN)
+
+
 
 clean:
-	-rm -rf build || rmdir build
-	-rm lib/lib*
+	-rm build/*.$(OBJ_TARGET_EXT) build/*.$(SHARED_TARGET_EXT) build/*.$(MAIN_TARGET_EXT)
 	clear || cls
-
 
