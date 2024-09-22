@@ -7,7 +7,7 @@ int main(void) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Feather Frenzy");
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 
-    Player* p1 = new Player(50.5f, 50.0f, RED);
+    Player* p1 = new Player(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, RED);
 
 
     // Main game loop
