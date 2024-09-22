@@ -3,7 +3,7 @@
 
 int main(void) {
 
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Tetra Zen");
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Feather Frenzy");
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 
 
